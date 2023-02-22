@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">智多星</string>
+    <string name="failed_load_response">返回内容失败，原因是 </string>
+    <string name="welcome">欢迎使用智多星</string>
+    <string name="writehere">在这里输入：</string>
+    <string name="hello">你好,智多星!</string>
+    <string name="Typing">正在输出......</string>
+</resources>
