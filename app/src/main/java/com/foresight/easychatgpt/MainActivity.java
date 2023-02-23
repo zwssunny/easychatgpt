@@ -40,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     List<Message> messageList;
     MessageAdapter messageAdapter;
     private final String TAG = "ChatGPT";
+    /*请在config.xml中配置openai apiKey值
+    https://openai.com
+    */
+    private String apiKey;
     private Session mySession;
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         messageEditText = findViewById(R.id.message_edit_text);
         sendButton = findViewById(R.id.send_btn);
         //setup Session
+        apiKey = getString(R.string.apiKey);
         String character_desc = getString(R.string.character_desc);
         int conversation_max_tokens = Integer.parseInt(getString(R.string.conversation_max_tokens));
         mySession = new Session(conversation_max_tokens, character_desc);
@@ -128,8 +133,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
-        String apiKey = getString(R.string.apiKey);
-        Request request = new Request.Builder()
+         Request request = new Request.Builder()
                 .url("https://api.openai.com/v1/completions")
                 .header("Authorization", "Bearer " + apiKey)
                 .post(body)
