@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void callAPI(String question) throws JSONException {
-        if (question == "#清除记忆") {
+        if (question.compareToIgnoreCase("#清除记忆") == 0) {
             mySession.clearSession();
             addToChat("记忆已清除", Message.SENT_BY_BOT);
             return;
@@ -150,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 addResponse(getString(R.string.failed_load_response) + e.getMessage());
-                mySession.clearSession();
+//                mySession.clearSession();
             }
 
             @Override
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     addResponse(getString(R.string.failed_load_response) + response.body().toString());
-                    mySession.clearSession();
+//                    mySession.clearSession();
                 }
             }
         });

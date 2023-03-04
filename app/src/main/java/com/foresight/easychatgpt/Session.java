@@ -6,6 +6,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 /*
  *保存会话过程，进行上下文维护
  * */
@@ -30,8 +31,8 @@ public class Session {
         :return: query content with conversaction
     * */
     public JSONArray buildSessionQuery(String query) throws JSONException {
-        if(session.length()==0){
-            String system_prompt=this.character_desc;
+        if (session.length() == 0) {
+            String system_prompt = this.character_desc;
             JSONObject system_item = new JSONObject();
             system_item.put("role", "system");
             system_item.put("content", system_prompt);
@@ -58,8 +59,9 @@ public class Session {
         List<Integer> countList = new ArrayList<>();
         for (int i = session.length() - 1; i >= 0; i--) {
             // count tokens of conversation list
-            JSONObject historyConv = (JSONObject)session.get(i);
-            count += historyConv.getString("role").length() + historyConv.getString("content").length()+15;
+            JSONObject historyConv = (JSONObject) session.get(i);
+            String[] tokens=historyConv.toString().split("\\s+");
+            count += tokens.length;
             countList.add(count);
         }
         for (int c : countList) {
@@ -71,7 +73,7 @@ public class Session {
     }
 
     public void clearSession() {
-        session=new JSONArray();
+        session = new JSONArray();
     }
 
 }
