@@ -1,16 +1,17 @@
 package com.foresight.easychatgpt;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 /*
  *保存会话过程，进行上下文维护
  * */
 public class Session {
 
-    private List<Map<String, String>> session = new ArrayList<>();
+    private JSONArray session = new JSONArray();
     private int maxTokens;
     private String character_desc;
 
@@ -23,44 +24,42 @@ public class Session {
     *
     *   build query with conversation history
         e.g.  Q: xxx
-        A: xxx
-        Q: xxx
+        role: system, content: xxx
+        role: user, content: xxx
         :param query: query content
         :return: query content with conversaction
     * */
-    public String buildSessionQuery(String query) {
-
-        String prompt = this.character_desc;
-        if (!prompt.isEmpty()) {
-            prompt += "\n\n\n";
+    public JSONArray buildSessionQuery(String query) throws JSONException {
+        if(session.length()==0){
+            String system_prompt=this.character_desc;
+            JSONObject system_item = new JSONObject();
+            system_item.put("role", "system");
+            system_item.put("content", system_prompt);
+            session.put(system_item);
         }
-        if (session.size() > 0) {
-            for (Map<String, String> conversation : session) {
-                prompt += "Q: " + conversation.get("question") + "\n\n\nA: " + conversation.get("answer") + "\n";
-            }
-            prompt += "Q: " + query + "\nA: ";
-            return prompt;
-        } else {
-            return prompt + "Q: " + query + "\nA: ";
-        }
+        JSONObject user_item = new JSONObject();
+        user_item.put("role", "user");
+        user_item.put("content", query);
+        session.put(user_item);
+        return session;
     }
 
-    public void saveSession(String query, String answer) {
-        Map<String, String> conversation = new HashMap<>();
-        conversation.put("question", query);
-        conversation.put("answer", answer);
-        session.add(conversation);
+    public void saveSession(String query, String answer) throws JSONException {
+        JSONObject gpt_item = new JSONObject();
+        gpt_item.put("role", "assistant");
+        gpt_item.put("content", answer);
+        session.put(gpt_item);
         // discard exceed limit conversation
         discardExceedConversation(session, maxTokens);
     }
 
-    private void discardExceedConversation(List<Map<String, String>> session, int maxTokens) {
+    private void discardExceedConversation(JSONArray session, int maxTokens) throws JSONException {
         int count = 0;
         List<Integer> countList = new ArrayList<>();
-        for (int i = session.size() - 1; i >= 0; i--) {
+        for (int i = session.length() - 1; i >= 0; i--) {
             // count tokens of conversation list
-            Map<String, String> historyConv = session.get(i);
-            count += historyConv.get("question").length() + historyConv.get("answer").length();
+            JSONObject historyConv = (JSONObject)session.get(i);
+            count += historyConv.getString("role").length() + historyConv.getString("content").length()+15;
             countList.add(count);
         }
         for (int c : countList) {
@@ -72,7 +71,7 @@ public class Session {
     }
 
     public void clearSession() {
-        session.clear();
+        session=new JSONArray();
     }
 
 }

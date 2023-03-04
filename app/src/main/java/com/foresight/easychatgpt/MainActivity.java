@@ -22,6 +22,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -84,11 +85,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(llm);
 
         sendButton.setOnClickListener((v) -> {
-            String question = messageEditText.getText().toString().trim();
-            addToChat(question, Message.SENT_BY_ME);
-            messageEditText.setText("");
-            callAPI(question);
-            welcomeTextView.setVisibility(View.GONE);
+
+            try {
+                String question = messageEditText.getText().toString().trim();
+                addToChat(question, Message.SENT_BY_ME);
+                messageEditText.setText("");
+                callAPI(question);
+                welcomeTextView.setVisibility(View.GONE);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         addToChat(response, Message.SENT_BY_BOT);
     }
 
-    void callAPI(String question) {
+    void callAPI(String question) throws JSONException {
         if (question == "#清除记忆") {
             mySession.clearSession();
             addToChat("记忆已清除", Message.SENT_BY_BOT);
@@ -116,25 +122,26 @@ public class MainActivity extends AppCompatActivity {
         }
         //okhttp
         messageList.add(new Message(getString(R.string.Typing), Message.SENT_BY_BOT));
-        String newQuestion = mySession.buildSessionQuery(question);
+        JSONArray newQuestion = mySession.buildSessionQuery(question);
 
         JSONObject jsonBody = new JSONObject();
         try {
-            jsonBody.put("model", "text-davinci-003");
-            jsonBody.put("prompt", newQuestion);
-            jsonBody.put("max_tokens", 1200);
-            jsonBody.put("temperature", 0.9);
+            //String newQuery = newQuestion.toString();
+            jsonBody.put("model", "gpt-3.5-turbo");//text-davinci-003
+            jsonBody.put("messages", newQuestion);
+            jsonBody.put("max_tokens", 1200);// 回复最大的字符数
+            jsonBody.put("temperature", 0.9);//值在[0,1]之间，越大表示回复越具有不确定性
             jsonBody.put("top_p", 1);
             jsonBody.put("frequency_penalty", 0.0);
             jsonBody.put("presence_penalty", 0.0);
-            jsonBody.put("stop", "\n\n\n");
+            //           jsonBody.put("stop", "\n\n\n");
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
         RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
-         Request request = new Request.Builder()
-                .url("https://api.openai.com/v1/completions")
+        Request request = new Request.Builder()
+                .url("https://api.openai.com/v1/chat/completions")
                 .header("Authorization", "Bearer " + apiKey)
                 .post(body)
                 .build();
@@ -149,12 +156,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    JSONObject jsonObject = null;
                     try {
-                        jsonObject = new JSONObject(response.body().string());
+                        JSONObject jsonObject = new JSONObject(response.body().string());
                         JSONArray jsonArray = jsonObject.getJSONArray("choices");
 //                        Log.i(TAG, jsonArray.toString());
-                        String result = jsonArray.getJSONObject(0).getString("text");
+                        String result = jsonArray.getJSONObject(0).getJSONObject("message").getString("content");//text
                         mySession.saveSession(question, result);
                         addResponse(result.trim());
                     } catch (JSONException e) {
