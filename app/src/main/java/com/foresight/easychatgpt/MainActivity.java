@@ -159,14 +159,17 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject jsonObject = new JSONObject(response.body().string());
                         JSONArray jsonArray = jsonObject.getJSONArray("choices");
 //                        Log.i(TAG, jsonArray.toString());
-                        String result = jsonArray.getJSONObject(0).getJSONObject("message").getString("content");//text
-                        mySession.saveSession(question, result);
-                        addResponse(result.trim());
+                        JSONObject jsonTokens = jsonObject.getJSONObject("usage");
+                        int total_tokens = jsonTokens.getInt("total_tokens");
+                        int completion_tokens = jsonTokens.getInt("completion_tokens");
+                        if (completion_tokens > 0) {
+                            String result = jsonArray.getJSONObject(0).getJSONObject("message").getString("content");//text
+                            mySession.saveSession(total_tokens, result);
+                            addResponse(result.trim());
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
-
                 } else {
                     addResponse(getString(R.string.failed_load_response) + response.body().toString());
 //                    mySession.clearSession();

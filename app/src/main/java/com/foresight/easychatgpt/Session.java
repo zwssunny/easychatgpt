@@ -1,8 +1,5 @@
 package com.foresight.easychatgpt;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,30 +42,24 @@ public class Session {
         return session;
     }
 
-    public void saveSession(String query, String answer) throws JSONException {
+    public void saveSession(int total_tokens, String answer) throws JSONException {
         JSONObject gpt_item = new JSONObject();
         gpt_item.put("role", "assistant");
         gpt_item.put("content", answer);
         session.put(gpt_item);
         // discard exceed limit conversation
-        discardExceedConversation(session, maxTokens);
+        discardExceedConversation(session, maxTokens, total_tokens);
     }
 
-    private void discardExceedConversation(JSONArray session, int maxTokens) throws JSONException {
-        int count = 0;
-        List<Integer> countList = new ArrayList<>();
-        for (int i = session.length() - 1; i >= 0; i--) {
-            // count tokens of conversation list
-            JSONObject historyConv = (JSONObject) session.get(i);
-            String[] tokens=historyConv.toString().split("\\s+");
-            count += tokens.length;
-            countList.add(count);
-        }
-        for (int c : countList) {
-            if (c > maxTokens) {
-                // pop first conversation
+    private void discardExceedConversation(JSONArray session, int maxTokens, int total_tokens) {
+        int dec_tokens = total_tokens;
+        while (dec_tokens > maxTokens) {
+            // pop first conversation
+            if (session.length() > 0)
                 session.remove(0);
-            }
+            else
+                break;
+            dec_tokens = dec_tokens - maxTokens;
         }
     }
 
