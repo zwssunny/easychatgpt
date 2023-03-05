@@ -10,8 +10,9 @@ To run this app, you need: An OpenAI API key Android Studio or any other Android
 
 Support session context, will cost more
 
-Open the project in Android Studio. Replace apiKey in the config.xml file with your own OpenAI API key. Build and run the app on an Android device or emulator. Contributing
+Open the project in Android Studio. Copy the file config.xml.bak to res/values/config.xml. Replace apiKey in the config.xml file with your own OpenAI API key. Build and run the app on an Android device or emulator. Contributing
 
 If you want to contribute to this project, feel free to create a pull request. Any contributions are welcome!
 # 更新日志
+>**2023.03.05：** 利用openAI接口返回的有效tokens来修正会话长度，防止tokens溢出，减少费用
 >**2023.03.04：** 接入[ChatGPT API](https://platform.openai.com/docs/guides/chat) (gpt-3.5-turbo)，默认使用该模型进行对话
