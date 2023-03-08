@@ -1,5 +1,10 @@
 package com.foresight.easychatgpt;
 
+import android.content.Context;
+
+import com.foresight.tokenizers.GPT2Tokenizer;
+import com.foresight.tokenizers.TokensCount;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,10 +17,12 @@ public class Session {
     private JSONArray session = new JSONArray();
     private int maxTokens;
     private String character_desc;
+    private TokensCount tokensCount;
 
-    public Session(int maxTokens, String character_desc) {
+    public Session(GPT2Tokenizer tokenizer, int maxTokens, String character_desc) {
         this.maxTokens = maxTokens;
         this.character_desc = character_desc;
+        this.tokensCount =new TokensCount(tokenizer);
     }
 
     /*
@@ -51,15 +58,20 @@ public class Session {
         discardExceedConversation(session, maxTokens, total_tokens);
     }
 
-    private void discardExceedConversation(JSONArray session, int maxTokens, int total_tokens) {
+    private void discardExceedConversation(JSONArray session, int maxTokens, int total_tokens) throws JSONException {
         int dec_tokens = total_tokens;
         while (dec_tokens > maxTokens) {
-            // pop first conversation
-            if (session.length() > 0)
-                session.remove(0);
+            int item_tokens=0;
+            if (session.length() > 3) {
+                //成对删除
+                JSONObject message= (JSONObject) session.remove(1);
+                item_tokens=tokensCount.num_tokens_from_message(message);
+                message= (JSONObject) session.remove(1);
+                item_tokens+=tokensCount.num_tokens_from_message(message);
+                dec_tokens = dec_tokens - item_tokens;
+            }
             else
                 break;
-            dec_tokens = dec_tokens - maxTokens;
         }
     }
 

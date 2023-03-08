@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.foresight.easychatgpt"
-        minSdk 23
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -26,17 +26,30 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/web-fragment.xml'
+    }
 }
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-//    implementation 'com.theokanning.openai-gpt3-java:api:0.10.0'
+    implementation 'org.json:json:20230227'
+    implementation('com.squareup.okhttp3:okhttp:5.0.0-alpha.11')
+    implementation 'com.google.api-client:google-api-client:2.2.0'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
-
 }

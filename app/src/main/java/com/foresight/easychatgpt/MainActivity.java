@@ -3,6 +3,7 @@ package com.foresight.easychatgpt;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -15,11 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.foresight.tokenizers.Constants;
+import com.foresight.tokenizers.GPT2Tokenizer;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         apiKey = getString(R.string.apiKey);
         String character_desc = getString(R.string.character_desc);
         int conversation_max_tokens = Integer.parseInt(getString(R.string.conversation_max_tokens));
-        mySession = new Session(conversation_max_tokens, character_desc);
+        mySession = new Session(tokenizerFromPretrained(), conversation_max_tokens, character_desc);
 
         //setup recycler view
         messageAdapter = new MessageAdapter(messageList, lc);
@@ -95,6 +100,20 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private GPT2Tokenizer tokenizerFromPretrained() {
+        InputStream encoderInputStream;
+        InputStream bpeInputStream;
+        try {
+            AssetManager assetManager = getAssets();
+            String path = "tokenizers/gpt2";
+            encoderInputStream = assetManager.open(path + "/" + Constants.ENCODER_FILE_NAME);
+            bpeInputStream = assetManager.open(path + "/" + Constants.VOCAB_FILE_NAME);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return GPT2Tokenizer.fromPretrained(encoderInputStream, bpeInputStream);
     }
 
     void addToChat(String message, String sentBy) {
@@ -164,8 +183,8 @@ public class MainActivity extends AppCompatActivity {
                         int completion_tokens = jsonTokens.getInt("completion_tokens");
                         if (completion_tokens > 0) {
                             String result = jsonArray.getJSONObject(0).getJSONObject("message").getString("content");//text
-                            mySession.saveSession(total_tokens, result);
                             addResponse(result.trim());
+                            mySession.saveSession(total_tokens, result);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
