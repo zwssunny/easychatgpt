@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +26,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class GPT2Tokenizer {
-    private final List<String> bpe;
     private final Map<String, Object> encoder;
     private final Map<Object, String> decoder;
 
@@ -41,9 +42,9 @@ public class GPT2Tokenizer {
 
             byte[] targetArray = new byte[bpeInputStream.available()];
             bpeInputStream.read(targetArray);
-            this.bpe = new ArrayList<>(Stream.of(new String(targetArray, StandardCharsets.UTF_8).split("\n")).collect(Collectors.toList()));
+            List<String> bpe = Stream.of(new String(targetArray, StandardCharsets.UTF_8).split("\n")).collect(Collectors.toList());
 
-            for (int i = 0; i < this.bpe.size(); i++) {
+            for (int i = 0; i < bpe.size(); i++) {
                 String[] pairs = bpe.get(i).split(" ");
                 this.bpeRanks.put(MutablePair.of(pairs[0], pairs[1]), i);
             }
@@ -73,7 +74,17 @@ public class GPT2Tokenizer {
     public static GPT2Tokenizer fromPretrained(InputStream encoderInputStream,InputStream bpeInputStream) {
         return new GPT2Tokenizer( encoderInputStream, bpeInputStream);
     }
-
+    public static GPT2Tokenizer fromPretrained(String path) {
+        InputStream encoderInputStream;
+        InputStream bpeInputStream;
+        try {
+            encoderInputStream = Files.newInputStream(Paths.get(path + "/" + Constants.ENCODER_FILE_NAME));
+            bpeInputStream = Files.newInputStream(Paths.get(path + "/" + Constants.VOCAB_FILE_NAME));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return  fromPretrained( encoderInputStream, bpeInputStream);
+    }
     private HashSet<MutablePair<String, String>> getPairs(List<String> word) {
         HashSet<MutablePair<String, String>> pairs = Sets.newHashSet();
         String prevCharacter = word.get(0);
@@ -210,7 +221,6 @@ public class GPT2Tokenizer {
 
         for (String token : unicodes) {
             for (String bpeToken : bpe(token).split(" ")) {
-//                bpeTokens.add(((BigInteger) encoder.get(bpeToken)).intValue());
                 bpeTokens.add((Integer) encoder.get(bpeToken));
             }
         }

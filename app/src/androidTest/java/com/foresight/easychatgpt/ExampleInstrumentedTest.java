@@ -20,6 +20,8 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -29,6 +31,10 @@ import java.io.InputStream;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
+    private final String encodingExample = "Hello my name is Kevin.";
+    private final List<Integer> decodingExample = Arrays.asList(15496, 616, 1438, 318, 7939, 13);
+    private final String encodingLongTextExample = "interesting";
+    private final List<Integer> decodingLongTextExample = Arrays.asList(47914);
     GPT2Tokenizer tokenizer;
 
     @Test
@@ -100,5 +106,23 @@ public class ExampleInstrumentedTest {
         JSONArray messages = buildMessages();
         int nums = tokensCount.num_tokens_from_messages(messages);
         Assert.assertEquals(131, nums); //openai（tiktoken）接口是返回是126
+    }
+
+    @Test
+    public void testEncoding() {
+        List<Integer> result = tokenizer.encode(encodingExample);
+        Assert.assertEquals(decodingExample, result);
+    }
+
+    @Test
+    public void testDecoding() {
+        String result = tokenizer.decode(decodingExample);
+        Assert.assertEquals(encodingExample, result);//在android环境测试失败
+    }
+
+    @Test
+    public void testLongWord() {
+        List<Integer> result = tokenizer.encode(encodingLongTextExample);
+        Assert.assertEquals(decodingLongTextExample, result);
     }
 }

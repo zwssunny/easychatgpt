@@ -1,7 +1,6 @@
 package com.foresight.easychatgpt;
 
 
-import com.foresight.tokenizers.Constants;
 import com.foresight.tokenizers.GPT2Tokenizer;
 import com.foresight.tokenizers.TokensCount;
 
@@ -12,10 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -73,16 +68,8 @@ public class ExampleUnitTest {
 
     @Before
     public void tokenizerFromPretrained() {
-        InputStream encoderInputStream;
-        InputStream bpeInputStream;
-        try {
-            String path = "src/main/assets/tokenizers/gpt2";
-            encoderInputStream = Files.newInputStream(Paths.get(path + "/" + Constants.ENCODER_FILE_NAME));
-            bpeInputStream = Files.newInputStream(Paths.get(path + "/" + Constants.VOCAB_FILE_NAME));
-            tokenizer = GPT2Tokenizer.fromPretrained(encoderInputStream, bpeInputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        String path = "src/main/assets/tokenizers/gpt2";
+        tokenizer = GPT2Tokenizer.fromPretrained(path);
     }
 
     @Test
